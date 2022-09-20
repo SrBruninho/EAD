@@ -1,1 +1,1 @@
-# EAD
+# EAD - Projeto Decoder
