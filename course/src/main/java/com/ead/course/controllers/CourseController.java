@@ -48,7 +48,7 @@ public class CourseController {
     }
 
     @PutMapping("/{courseId}")
-    public ResponseEntity<Object> update(@PathVariable(value = "courseId") UUID courseId,
+    public ResponseEntity<Object> updateCourse(@PathVariable(value = "courseId") UUID courseId,
                                          @RequestBody @Valid CourseDTO courseDTO){
         Optional<CourseModel> courseModelOptional = courseService.findById( courseId );
         if( courseModelOptional.isEmpty() ){
