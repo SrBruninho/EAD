@@ -49,7 +49,7 @@ public class AuthenticationController {
         userModel.setLastUpdateDate( LocalDateTime.now(ZoneId.of("UTC")) );
 
         userService.saveUser( userModel );
-        log.debug("POST | register USER userDTO saved {}", userModel.toString() );
+        log.debug("POST | register USER userId saved {}", userModel.getUserId() );
         log.info("User saved succesfully ! {} ", userModel.getUserId() );
         return ResponseEntity.status( HttpStatus.CREATED ).body( userModel );
     }

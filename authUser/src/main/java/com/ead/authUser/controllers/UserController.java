@@ -97,8 +97,8 @@ public class UserController {
             userModel.setLastUpdateDate( LocalDateTime.now( ZoneId.of( "UTC" ) ) );
 
             userService.saveUser( userModel );
-            log.debug("PUT | updateUSER userModel saved {}", userModel.toString() );
-            log.info("PUT | updateUSER userModel saved {}", userDTO.toString() );
+            log.debug("PUT | updateUSER userId saved {}", userModel.getUserId() );
+            log.info("PUT | updateUSER userId saved {}", userModel.getUserId());
             return ResponseEntity.status(HttpStatus.OK).body( userModel );
         }
     }
