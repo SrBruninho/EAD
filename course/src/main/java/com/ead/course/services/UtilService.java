@@ -6,5 +6,9 @@ import java.util.UUID;
 
 public interface UtilService {
 
-    String createURL(UUID courseId, Pageable pageable);
+    String createURLGetAllUserByCourse(UUID courseId, Pageable pageable);
+
+    String createURLgetOneUserById(UUID userId);
+
+    String createURLPostSubscriptionUserInCourse(UUID userId);
 }

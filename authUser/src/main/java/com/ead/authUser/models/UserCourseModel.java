@@ -1,7 +1,9 @@
 package com.ead.authUser.models;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import org.springframework.hateoas.RepresentationModel;
 
 import javax.persistence.*;
@@ -12,6 +14,8 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Entity
 @Table(name = "TB_USERS_COURSES")
+@AllArgsConstructor
+@NoArgsConstructor
 public class UserCourseModel extends RepresentationModel<UserCourseModel> implements Serializable {
 
     private static final Long serialVersionUID = 1L;
