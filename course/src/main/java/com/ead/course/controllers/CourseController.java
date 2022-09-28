@@ -4,6 +4,8 @@ import com.ead.course.dtos.CourseDTO;
 import com.ead.course.models.CourseModel;
 import com.ead.course.services.CourseService;
 import com.ead.course.specifications.SpecificationTemplate;
+import com.ead.course.validation.CourseValidator;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -12,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.Errors;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
@@ -24,18 +27,30 @@ import java.util.UUID;
 @RestController
 @RequestMapping(value = "/courses")
 @CrossOrigin(origins="*",maxAge=3600)
+@Log4j2
 public class CourseController {
 
     @Autowired
     private CourseService courseService;
 
+    @Autowired
+    private CourseValidator courseValidator;
+
     @PostMapping
-    public ResponseEntity<Object> saveCourse(@RequestBody @Valid CourseDTO courseDTO){
+    public ResponseEntity<Object> saveCourse(@RequestBody CourseDTO courseDTO, Errors errors){
+        log.debug("POST | saveCourse courseDTO received {}", courseDTO.toString() );
+
+        courseValidator.validate( courseDTO, errors );
+        if( errors.hasErrors()){
+            return ResponseEntity.status( HttpStatus.BAD_REQUEST ).body( errors.getAllErrors() );
+        }
         var courseModel = new CourseModel();
 
         BeanUtils.copyProperties(courseDTO,courseModel);
         courseModel.setCreationDate( LocalDateTime.now( ZoneId.of("UTC") ) );
         courseModel.setLastUpdateDate( LocalDateTime.now( ZoneId.of("UTC") ) );
+        log.debug("POST | saveCourse courseDTO saved {}", courseModel.toString() );
+        log.info("Course saved succesfully courseId {}", courseModel.getCourseId() );
 
         return ResponseEntity.status( HttpStatus.CREATED ).body( courseService.save( courseModel ) );
 
@@ -75,8 +90,15 @@ public class CourseController {
     public ResponseEntity<Page<CourseModel>> getAllCourses(SpecificationTemplate.CourseSpec courseSpec,
                                                            @PageableDefault(
                                                                    page=0,size = 10,sort = "courseId",
-                                                                   direction = Sort.Direction.ASC)Pageable pageable){
-        return ResponseEntity.status( HttpStatus.OK ).body( courseService.findAll( courseSpec, pageable) );
+                                                                   direction = Sort.Direction.ASC)Pageable pageable,
+    @RequestParam(required = false) UUID userId){
+
+        if( userId != null){
+            return  ResponseEntity.status( HttpStatus.OK ).body(
+                    courseService.findAll( SpecificationTemplate.courserUserId( userId ).and( courseSpec ),pageable ));
+        }else{
+            return ResponseEntity.status( HttpStatus.OK ).body( courseService.findAll( courseSpec, pageable) );
+        }
     }
 
     @GetMapping("/{courseId}")

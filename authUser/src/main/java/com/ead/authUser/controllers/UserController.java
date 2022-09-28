@@ -33,10 +33,19 @@ public class UserController {
     private UserService userService;
 
     @GetMapping
-    public ResponseEntity<Page<UserModel>> getAllUsers(SpecificationTemplate.UserSpec spec,
-            @PageableDefault(page = 0,size=10,sort="userId",direction = Sort.Direction.ASC)Pageable pageable) {
+    public ResponseEntity<Page<UserModel>> getAllUsers(
+            SpecificationTemplate.UserSpec spec,
+            @PageableDefault(page = 0,size=10,sort="userId",direction = Sort.Direction.ASC)Pageable pageable,
+            @RequestParam(required = false) UUID courseId) {
         log.debug("GET | getAllUsers");
-        Page<UserModel> userModelPage = userService.findAll( pageable, spec );
+        Page<UserModel> userModelPage = null;
+
+        if( courseId != null){
+            userModelPage = userService.findAll( pageable, SpecificationTemplate.userCourseId( courseId ).and( spec ) );
+        }else{
+            userModelPage = userService.findAll( pageable, spec );
+        }
+
         if( !userModelPage.isEmpty() ){
             for( UserModel user : userModelPage.toList() ){
                 user.add( linkTo( methodOn( UserController.class ).getOneUser( user.getUserId() ) ).withSelfRel() );
@@ -97,8 +106,8 @@ public class UserController {
             userModel.setLastUpdateDate( LocalDateTime.now( ZoneId.of( "UTC" ) ) );
 
             userService.saveUser( userModel );
-            log.debug("PUT | updateUSER userModel saved {}", userModel.toString() );
-            log.info("PUT | updateUSER userModel saved {}", userDTO.toString() );
+            log.debug("PUT | updateUSER userId saved {}", userModel.getUserId() );
+            log.info("PUT | updateUSER userId saved {}", userModel.getUserId());
             return ResponseEntity.status(HttpStatus.OK).body( userModel );
         }
     }
