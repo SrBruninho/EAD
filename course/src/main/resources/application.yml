@@ -1,9 +1,9 @@
 server:
-  port: 8087
+  port: 8082
 
 spring:
   datasource:
-    url: jdbc:postgresql://localhost:5432/ead-authuser
+    url: jdbc:postgresql://localhost:5432/ead-course
     username: postgres
     password: admin
   jpa:
@@ -15,18 +15,8 @@ spring:
     properties:
       hibernate:
         show_sql: true
-  output:
-    ansi:
-      enabled: always
-
-logging:
-  level:
-    com.ead: TRACE
-    root: INFO
-    org.springframework.web: DEBUG
-    org.hibernate: INFO
 
 ead:
   api:
     url:
-      course: 'http://localhost:8082'
+      authuser: 'http://localhost:8087'
