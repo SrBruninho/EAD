@@ -26,4 +26,9 @@ public class UtilServiceImpl implements UtilService {
     public String createURLPostSubscriptionUserInCourse(UUID userId) {
         return "/users/" + userId +"/courses/subscription";
     }
+
+    @Override
+    public String createURLdeleteCourseInAuthUser(UUID courseId) {
+        return "/users/courses/" + courseId;
+    }
 }
