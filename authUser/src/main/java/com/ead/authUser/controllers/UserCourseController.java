@@ -2,10 +2,6 @@ package com.ead.authUser.controllers;
 
 import com.ead.authUser.clients.CourseClient;
 import com.ead.authUser.dtos.CourseDTO;
-import com.ead.authUser.dtos.UserCourseDTO;
-import com.ead.authUser.models.UserCourseModel;
-import com.ead.authUser.models.UserModel;
-import com.ead.authUser.services.UserCourseService;
 import com.ead.authUser.services.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,11 +11,11 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.client.HttpStatusCodeException;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RestController;
 
-import javax.validation.Valid;
-import java.util.Optional;
 import java.util.UUID;
 
 @RestController
@@ -33,9 +29,6 @@ public class UserCourseController {
     @Autowired
     private UserService userService;
 
-    @Autowired
-    private UserCourseService userCourseService;
-
     @GetMapping("/users/{userId}/courses")
     public ResponseEntity<Page<CourseDTO>> getAllCoursesByUser(
             @PageableDefault(page = 0,
@@ -43,35 +36,6 @@ public class UserCourseController {
                     direction = Sort.Direction.ASC)Pageable pageable,
             @PathVariable(value="userId") UUID userId ) {
 
-        return ResponseEntity.status(HttpStatus.OK).body( courseClient.getAllCoursesByUser( userId, pageable));
-    }
-
-    @PostMapping("/users/{userId}/courses/subscription")
-    public ResponseEntity<Object> saveSubscriptionUserInCourse(@PathVariable(value="userId") UUID userId,
-                                                               @RequestBody @Valid UserCourseDTO userCourseDTO){
-        Optional<UserModel> userModelOptional = userService.findById( userId );
-        ResponseEntity<CourseDTO> responseCourse;
-        if(userModelOptional.isEmpty()){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body( "User not found !" );
-        }
-
-        if( userCourseService.existsByUserAndCourseId( userModelOptional.get(), userCourseDTO.getCourseId() )){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body( "Error: User already subscribed!" );
-        }
-
-        UserCourseModel userCourseModel = userCourseService.save( userModelOptional.get().convertToUserCourseModel( userCourseDTO.getCourseId() ));
-
-        return ResponseEntity.status( HttpStatus.CREATED ).body( userCourseModel );
-    }
-
-    @DeleteMapping("/users/courses/{courseId}")
-    public ResponseEntity<Object> deleteUserCourseByCourse(@PathVariable(value="courseId") UUID courseId){
-        if( !userCourseService.existsByCourseId( courseId ) ){
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body( "UserCourse not found !" );
-        }
-
-        userCourseService.deleteUserCourseByCourse( courseId );
-        return ResponseEntity.status(HttpStatus.OK).body( "UserCourse deleted succesfully!" );
-
+        return ResponseEntity.status(HttpStatus.OK).body( courseClient.getAllCoursesByUser( userId, pageable ));
     }
 }
