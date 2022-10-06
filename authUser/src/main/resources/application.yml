@@ -30,6 +30,7 @@ logging:
     com.ead: TRACE
     root: INFO
     org.springframework.web: DEBUG
+    org.springframework.web.client.RestTemplate: DEBUG
     org.hibernate: INFO
 
 ead:

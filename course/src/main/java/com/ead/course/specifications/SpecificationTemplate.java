@@ -70,7 +70,7 @@ public class SpecificationTemplate {
             criteriaQuery.distinct(true);
             Root<UserModel> userRoot = root;
             Root<CourseModel> courseRoot = criteriaQuery.from(CourseModel.class);
-            Expression<Collection<UserModel>> coursesUsers = userRoot.get("users");
+            Expression<Collection<UserModel>> coursesUsers = courseRoot.get("users");
 
             return criteriaBuilder.and(
                     criteriaBuilder.equal(

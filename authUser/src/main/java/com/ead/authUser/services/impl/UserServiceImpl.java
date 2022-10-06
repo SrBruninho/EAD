@@ -74,5 +74,26 @@ public class UserServiceImpl implements UserService {
         return userModel;
     }
 
+    @Transactional
+    @Override
+    public void deleteAndPublishEvent(UserModel userModel) {
+        deleteUser( userModel );
+        userEventPublisher.publishUserEvent( userModel.convertToUserEventDTO(), ActionType.DELETE );
+    }
+
+    @Transactional
+    @Override
+    public UserModel updatePassword(UserModel userModel) {
+        return saveUser( userModel );
+    }
+
+    @Transactional
+    @Override
+    public UserModel updateUserAndPublishEvent(UserModel userModel) {
+        userModel = saveUser(userModel);
+        userEventPublisher.publishUserEvent( userModel.convertToUserEventDTO(), ActionType.UPDATE );
+        return userModel;
+    }
+
 
 }

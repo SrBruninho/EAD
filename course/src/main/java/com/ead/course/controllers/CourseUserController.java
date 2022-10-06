@@ -1,7 +1,9 @@
 package com.ead.course.controllers;
 
 import com.ead.course.dtos.SubscriptionDTO;
+import com.ead.course.enums.UserStatus;
 import com.ead.course.models.CourseModel;
+import com.ead.course.models.UserModel;
 import com.ead.course.services.CourseService;
 import com.ead.course.services.UserService;
 import com.ead.course.specifications.SpecificationTemplate;
@@ -32,16 +34,14 @@ public class CourseUserController {
     @GetMapping("/courses/{courseId}/users")
     public ResponseEntity<Object> getAllUsersByCourse(
             SpecificationTemplate.UserSpec userSpec,
-            @PageableDefault(page = 0,
-                    size=10,sort="userId",
-                    direction = Sort.Direction.ASC) Pageable pageable,
+            @PageableDefault(page = 0,size=10,sort="userId",direction = Sort.Direction.ASC) Pageable pageable,
             @PathVariable(value="courseId") UUID courseId ) {
         Optional<CourseModel> courseModelOptional = courseService.findById( courseId );
         if( courseModelOptional.isEmpty() ){
             return ResponseEntity.status( HttpStatus.NOT_FOUND ).body( "Course Not Found !" );
         }
         return ResponseEntity.status(HttpStatus.OK).body(
-                userService.findAll( SpecificationTemplate.userCourseId( courseId).and( userSpec ), pageable ) );
+                userService.findAll( SpecificationTemplate.userCourseId( courseId ).and( userSpec ), pageable ) );
     }
 
     @PostMapping("/courses/{courseId}/users/subscription")
@@ -52,7 +52,20 @@ public class CourseUserController {
         if( courseModelOptional.isEmpty() ){
             return ResponseEntity.status( HttpStatus.NOT_FOUND ).body( "Course Not Found !" );
         }
-        // TO DO with STATE TRANSFER
-        return ResponseEntity.status( HttpStatus.CREATED ).body( "TO DO" );
+
+        if( courseService.existsByCourseAndUser( courseId, subscriptionDTO.getUserId())){
+            return ResponseEntity.status( HttpStatus.NOT_FOUND ).body( "Error: subscription already exists!" );
+        }
+        Optional<UserModel> userModel = userService.findById( subscriptionDTO.getUserId() );
+        if( userModel.isEmpty()){
+            return ResponseEntity.status( HttpStatus.NOT_FOUND ).body( "Error: User not Found!" );
+        }
+
+        if( userModel.get().getUserStatus().equals(UserStatus.BLOCKED.toString() ) ){
+            return ResponseEntity.status( HttpStatus.NOT_FOUND ).body( "Error: User is blocked!" );
+        }
+        courseService.saveSubscriptionUserInCourse( courseModelOptional.get().getCourseId(),
+                userModel.get().getUserId() );
+        return ResponseEntity.status( HttpStatus.CREATED ).body( "Subscription created succesfully" );
     }
 }

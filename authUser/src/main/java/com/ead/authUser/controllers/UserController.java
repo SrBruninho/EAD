@@ -71,7 +71,7 @@ public class UserController {
             log.debug("DELETE | deleteUSER userId {} not found", userId );
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body( "User not found !" );
         } else{
-            userService.deleteUser(userModelOptional.get());
+            userService.deleteAndPublishEvent(userModelOptional.get());
             log.info("DELETE | deleteUSER userId {} User deleted!", userId );
             log.debug("DELETE | deleteUSER userId {} User deleted!", userId );
 
@@ -98,7 +98,7 @@ public class UserController {
             userModel.setCpf( userDTO.getCpf() );
             userModel.setLastUpdateDate( LocalDateTime.now( ZoneId.of( "UTC" ) ) );
 
-            userService.saveUser( userModel );
+            userService.updateUserAndPublishEvent( userModel );
             log.debug("PUT | updateUSER userId saved {}", userModel.getUserId() );
             log.info("PUT | updateUSER userId saved {}", userModel.getUserId());
             return ResponseEntity.status(HttpStatus.OK).body( userModel );
@@ -124,7 +124,7 @@ public class UserController {
             var userModel = userModelOptional.get();
             userModel.setPassword( userDTO.getPassword() );
             userModel.setLastUpdateDate( LocalDateTime.now( ZoneId.of( "UTC" ) ) );
-            userService.saveUser( userModel );
+            userService.updatePassword( userModel );
             log.debug("Password changed!", userId );
             log.info("Password changed!" );
             return ResponseEntity.status(HttpStatus.OK).body( "Password updated !" );
@@ -147,7 +147,7 @@ public class UserController {
             var userModel = userModelOptional.get();
             userModel.setImageURL( userDTO.getImageURL() );
             userModel.setLastUpdateDate( LocalDateTime.now( ZoneId.of( "UTC" ) ) );
-            userService.saveUser( userModel );
+            userService.updateUserAndPublishEvent( userModel );
             log.debug("Image changed!", userId );
             log.info("Image changed!" );
             return ResponseEntity.status(HttpStatus.OK).body( userModel );
