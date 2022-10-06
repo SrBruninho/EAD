@@ -87,7 +87,7 @@ public class SpecificationTemplate {
 
             return criteriaBuilder.and(
                     criteriaBuilder.equal(
-                            courseRoot.get("userId"), userId),
+                            userRoot.get("userId"), userId),
                     criteriaBuilder.isMember(courseRoot, userCourses) );
         };
     }
