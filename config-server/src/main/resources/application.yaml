@@ -8,8 +8,8 @@ spring:
     config:
       server:
         git:
-          uri: https://github.com/SrBruninho/EAD/tree/feature/Config-server
-          default-label: feature/Config-server
+          uri: https://github.com/SrBruninho/EAD
+          default-label: main
 eureka:
   client:
     serviceUrl:
