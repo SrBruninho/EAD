@@ -9,7 +9,7 @@ spring:
       server:
         git:
           uri: https://github.com/SrBruninho/EAD
-          default-label: main
+          default-label: develop
 eureka:
   client:
     serviceUrl:
