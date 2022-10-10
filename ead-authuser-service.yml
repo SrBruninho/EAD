@@ -42,16 +42,16 @@ ead:
       userEvent: ead.userevent
 
 authuser:
-    refreshscope:
-        name: refresh-Test-Name
+  refreshscope:
+    name: refresh-Test-Name
         
 management:
-    endpoints:
-        web:
-            exposure:
-                include:
-                    - refresh
-                    - health
+  endpoints:
+    web:
+      exposure:
+        include:
+          - refresh
+          - health
 
 resilience4j:
   circuitbreaker:
