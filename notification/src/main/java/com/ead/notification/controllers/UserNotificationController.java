@@ -36,7 +36,7 @@ public class UserNotificationController {
     }
 
     @PutMapping("/users/{userId}/notifications/{notificationId}")
-    public ResponseEntity<Object> updateNtification(
+    public ResponseEntity<Object> updateNotification(
             @PathVariable(value = "userId") UUID userId,
             @PathVariable(value = "notificationId") UUID notificationId,
             @RequestBody @Valid NotificationDTO notificationDTO)
@@ -47,7 +47,7 @@ public class UserNotificationController {
         if( notificationModelOpt.isEmpty() )
             return  ResponseEntity.status( HttpStatus.NOT_FOUND ).body( "Notification not Found!" );
 
-        notificationModelOpt.get().setNotificationStatus( NotificationStatus.READ );
+        notificationModelOpt.get().setNotificationStatus( notificationDTO.getNotificationStatus() );
         notificationService.saveNotification( notificationModelOpt.get() );
 
         return ResponseEntity.status( HttpStatus.OK )
