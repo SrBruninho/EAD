@@ -7,9 +7,8 @@ spring:
   application:
     name: ead-notification-service
   config:
-    import: 'optional:configserver:'
+    import: 'configserver:'
   cloud:
-    config:
       discovery:
         serviceId: ead-config-server
   datasource:
