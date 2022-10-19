@@ -1,6 +1,5 @@
 package com.ead.authUser.configs.security;
 
-import com.ead.authUser.enums.RoleType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,8 +10,12 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import javax.servlet.Filter;
 
 @Configuration
 @EnableWebSecurity
@@ -20,7 +23,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Autowired
-    private UserDetailServiceImpl userDetailService;
+    private UserDetailsServiceImpl userDetailService;
 
     @Autowired
     private AuthenticationEntryPointImpl authenticationEntryPoint;
@@ -32,16 +35,21 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     @Override
     protected void configure(HttpSecurity httpSecurity) throws Exception{
         httpSecurity
-                .httpBasic()
-                .authenticationEntryPoint( authenticationEntryPoint )
+                .exceptionHandling().authenticationEntryPoint( authenticationEntryPoint )
+                .and()
+                .sessionManagement().sessionCreationPolicy( SessionCreationPolicy.STATELESS )
                 .and()
                 .authorizeRequests()
                 .antMatchers(AUTH_WHITELIST).permitAll()
-                .antMatchers( HttpMethod.GET, "/users/**" ).hasRole( "STUDENT" )
                 .anyRequest().authenticated()
                 .and()
-                .csrf().disable()
-                .formLogin();
+                .csrf().disable();
+        httpSecurity.addFilterBefore( authenticationJwtFilter(), UsernamePasswordAuthenticationFilter.class);
+    }
+
+    @Bean
+    public AuthenticationJwtFilter authenticationJwtFilter() {
+        return new AuthenticationJwtFilter();
     }
 
     @Override

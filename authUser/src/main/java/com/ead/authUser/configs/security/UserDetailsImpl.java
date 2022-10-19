@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 @Data
 @AllArgsConstructor
-public class UserDetailImpl implements UserDetails {
+public class UserDetailsImpl implements UserDetails {
 
     private UUID userId;
     private String fullName;
@@ -27,11 +27,11 @@ public class UserDetailImpl implements UserDetails {
     private String email;
     private Collection<? extends GrantedAuthority> authorities;
 
-    public static UserDetailImpl build( UserModel userModel ){
+    public static UserDetailsImpl build(UserModel userModel ){
         List<GrantedAuthority> authorityList = userModel.getRoles().stream()
                 .map( roleModel -> new SimpleGrantedAuthority( roleModel.getAuthority() ) )
                 .collect(Collectors.toList());
-        return new UserDetailImpl(
+        return new UserDetailsImpl(
                 userModel.getUserId(),
                 userModel.getFullName(),
                 userModel.getUsername(),
