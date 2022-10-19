@@ -1,5 +1,7 @@
 package com.ead.authUser.controllers;
 
+import com.ead.authUser.configs.security.AuthenticationCurrentUserService;
+import com.ead.authUser.configs.security.UserDetailsImpl;
 import com.ead.authUser.dtos.UserDTO;
 import com.ead.authUser.models.UserModel;
 import com.ead.authUser.services.UserService;
@@ -7,12 +9,19 @@ import com.ead.authUser.specifications.SpecificationTemplate;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,10 +41,24 @@ public class UserController {
     @Autowired
     private UserService userService;
 
+    @Autowired
+    private AuthenticationCurrentUserService authCurrentUserService;
+
+    /*@Bean
+    public RoleHierarchy roleHierarchy(){
+        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+        String hierarchy = "ROLE_ADMIN > ROLE_INSTRUCTOR \n ROLE_INSTRUCTOR > ROLE_STUDENT \n ROLE_STUDENT > ROLE_USER";
+        roleHierarchy.setHierarchy( hierarchy );
+        return roleHierarchy;
+    }*/
+
+    @PreAuthorize( "hasAnyRole('USER','STUDENT')" )
     @GetMapping
     public ResponseEntity<Page<UserModel>> getAllUsers(
             SpecificationTemplate.UserSpec spec,
-            @PageableDefault(page = 0,size=10,sort="userId",direction = Sort.Direction.ASC)Pageable pageable) {
+            @PageableDefault(page = 0,size=10,sort="userId",direction = Sort.Direction.ASC)Pageable pageable, Authentication authentication) {
+        UserDetails userPrincipal = (UserDetailsImpl) authentication.getPrincipal();
+        log.info("Authentication {}", userPrincipal.getUsername());
         log.debug("GET | getAllUsers");
         Page<UserModel> userModelPage = userService.findAll( pageable, spec );
 
@@ -49,17 +72,24 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body( userModelPage );
     }
 
+    @PreAuthorize("hasAnyRole('STUDENT')")
     @GetMapping("/{userId}")
     public ResponseEntity<Object> getOneUser(@PathVariable(value="userId")UUID userId){
         log.debug("GET | getOneUser userId {}", userId );
-        Optional<UserModel> userModelOptional = userService.findById( userId );
-        if(userModelOptional.isEmpty()){
-            log.warn("User not found! {}", userId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body( "User not found !" );
-        } else{
-            log.debug("GET | getOneUser userId {} found!", userId );
-            log.info("GET | getOneUser userId {} found!", userId );
-            return ResponseEntity.status(HttpStatus.OK).body( userModelOptional.get() );
+        UUID currentUserId = authCurrentUserService.getCurrentUser().getUserId();
+
+        if( currentUserId.equals( userId ) ) {
+            Optional<UserModel> userModelOptional = userService.findById(userId);
+            if (userModelOptional.isEmpty()) {
+                log.warn("User not found! {}", userId);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found !");
+            } else {
+                log.debug("GET | getOneUser userId {} found!", userId);
+                log.info("GET | getOneUser userId {} found!", userId);
+                return ResponseEntity.status(HttpStatus.OK).body(userModelOptional.get());
+            }
+        }else {
+            throw new AccessDeniedException("Forbidden");
         }
     }
 
