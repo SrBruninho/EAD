@@ -1,9 +1,12 @@
 package com.ead.authUser.controllers;
 
 import com.ead.authUser.dtos.UserDTO;
+import com.ead.authUser.enums.RoleType;
 import com.ead.authUser.enums.UserStatus;
 import com.ead.authUser.enums.UserType;
+import com.ead.authUser.models.RoleModel;
 import com.ead.authUser.models.UserModel;
+import com.ead.authUser.services.RoleService;
 import com.ead.authUser.services.UserService;
 import com.fasterxml.jackson.annotation.JsonView;
 import lombok.extern.log4j.Log4j2;
@@ -11,6 +14,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,6 +28,12 @@ import java.time.ZoneId;
 public class AuthenticationController {
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private RoleService roleService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @PostMapping("/signup")
     public ResponseEntity<Object> registerUser(@RequestBody
@@ -41,12 +51,18 @@ public class AuthenticationController {
             return ResponseEntity.status( HttpStatus.CONFLICT ).body( "Error: E-mail already registered!" );
         }
 
+        RoleModel roleModel = roleService.findByRoleType( RoleType.ROLE_STUDENT )
+                .orElseThrow( () -> new RuntimeException("Error: Role is not Found!"));
+
+        userDTO.setPassword( passwordEncoder.encode( userDTO.getPassword() ) );
+
         var userModel = new UserModel();
         BeanUtils.copyProperties(userDTO,userModel);
         userModel.setUserStatus(UserStatus.ACTIVE);
         userModel.setUserType(UserType.STUDENT);
         userModel.setCreationDate( LocalDateTime.now(ZoneId.of("UTC")) );
         userModel.setLastUpdateDate( LocalDateTime.now(ZoneId.of("UTC")) );
+        userModel.getRoles().add( roleModel );
 
         userService.saveAndPublishEvent( userModel );
 

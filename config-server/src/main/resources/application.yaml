@@ -11,6 +11,9 @@ spring:
           uri: https://github.com/SrBruninho/EAD
           default-label: develop
 ead:
+  configServer:
+    username: configserver
+    password: 'ead123cs'
   serviceRegistry:
     username: serviceregistry
     password: 'ead123sr'
