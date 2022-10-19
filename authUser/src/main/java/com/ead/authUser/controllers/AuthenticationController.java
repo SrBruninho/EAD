@@ -1,5 +1,8 @@
 package com.ead.authUser.controllers;
 
+import com.ead.authUser.configs.security.JwtProvider;
+import com.ead.authUser.dtos.JwtDTO;
+import com.ead.authUser.dtos.LoginDTO;
 import com.ead.authUser.dtos.UserDTO;
 import com.ead.authUser.enums.RoleType;
 import com.ead.authUser.enums.UserStatus;
@@ -14,10 +17,15 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 
@@ -34,6 +42,12 @@ public class AuthenticationController {
 
     @Autowired
     private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private JwtProvider jwtProvider;
 
     @PostMapping("/signup")
     public ResponseEntity<Object> registerUser(@RequestBody
@@ -69,5 +83,14 @@ public class AuthenticationController {
         log.debug("POST | register USER userId saved {}", userModel.getUserId() );
         log.info("User saved succesfully ! {} ", userModel.getUserId() );
         return ResponseEntity.status( HttpStatus.CREATED ).body( userModel );
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<JwtDTO> authenticateUser(@Valid @RequestBody LoginDTO loginDTO){
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken( loginDTO.getUsername(), loginDTO.getPassword() ) );
+        SecurityContextHolder.getContext().setAuthentication( authentication );
+        String jwt = jwtProvider.generateJwt( authentication );
+        return ResponseEntity.ok( new JwtDTO( jwt ) );
     }
 }
