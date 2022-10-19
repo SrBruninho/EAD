@@ -3,8 +3,10 @@ package com.ead.authUser.services.impl;
 import com.ead.authUser.clients.CourseClient;
 import com.ead.authUser.dtos.UserEventDTO;
 import com.ead.authUser.enums.ActionType;
+import com.ead.authUser.enums.UserType;
 import com.ead.authUser.models.UserModel;
 import com.ead.authUser.publishers.UserEventPublisher;
+import com.ead.authUser.repositories.RoleRepository;
 import com.ead.authUser.repositories.UserRepository;
 import com.ead.authUser.services.UserService;
 import org.springframework.beans.BeanUtils;
@@ -30,6 +32,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserEventPublisher userEventPublisher;
+
+    @Autowired
+    private RoleRepository roleRepository;
 
     @Override
     public List<UserModel> findAll() {
@@ -85,6 +90,10 @@ public class UserServiceImpl implements UserService {
     @Override
     public UserModel updatePassword(UserModel userModel) {
         return saveUser( userModel );
+    }
+
+    void updateUserRole( UUID userId, UUID roleId ){
+
     }
 
     @Transactional
