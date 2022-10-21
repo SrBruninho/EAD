@@ -1,6 +1,5 @@
-package com.ead.authUser.configs.security;
+package com.ead.notification.configs.security;
 
-import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -16,14 +15,10 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.UUID;
 
-@Log4j2
 public class AuthenticationJwtFilter extends OncePerRequestFilter {
 
     @Autowired
     private JwtProvider jwtProvider;
-
-    @Autowired
-    private UserDetailsServiceImpl userDetailsService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -34,7 +29,8 @@ public class AuthenticationJwtFilter extends OncePerRequestFilter {
 
             if( jwtStr != null && jwtProvider.validateJwt( jwtStr ) ){
                 String userId = jwtProvider.getSubjectJwt( jwtStr );
-                UserDetails userDetails = userDetailsService.loadUserById( UUID.fromString( userId ) );
+                String rolesStr = jwtProvider.getClaimNameJwt( jwtStr, "roles");
+                UserDetails userDetails = UserDetailsImpl.build( UUID.fromString( userId ), rolesStr );
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                   userDetails, null, userDetails.getAuthorities()
                 );
