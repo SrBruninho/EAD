@@ -15,6 +15,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,23 +36,27 @@ public class InstructorController {
     @Autowired
     private RoleService roleService;
 
+    @PreAuthorize("hasAnyRole('ADMIN')")
     @PostMapping("/subscription")
     public ResponseEntity<Object> saveSubscriptionInstructor(@RequestBody
                                                @Valid
                                                              InstructorDTO instructorDTO){
         log.debug("POST | registerInstructor instructorDTO received {}", instructorDTO.toString() );
 
-        Optional<UserModel>  userModelOptional = userService.findById( instructorDTO.getUserId() );
+        Optional<UserModel> userModelOptional = userService.findById( instructorDTO.getUserId() );
 
         Optional<RoleModel> roleModelInstructor = roleService.findByRoleType( RoleType.ROLE_INSTRUCTOR );
 
         if( userModelOptional.isEmpty() ){
             return ResponseEntity.status( HttpStatus.NOT_FOUND).body( "User not Found!");
         } else {
+            RoleModel roleModel = roleService.findByRoleType( RoleType.ROLE_INSTRUCTOR )
+                    .orElseThrow( ()-> new RuntimeException( "Error: Role is not found !" ) );
             var userModel = userModelOptional.get();
             userModel.setUserType( UserType.INSTRUCTOR );
             userModel.setLastUpdateDate( LocalDateTime.now( ZoneId.of("UTC") ) );
-            roleService.updateUserRole( userModel.getUserId(), roleModelInstructor.get().getRoleId() );
+            userModel.getRoles().add( roleModel );
+           // roleService.updateUserRole( userModel.getUserId(), roleModelInstructor.get().getRoleId() );
             userService.updateUserAndPublishEvent( userModel );
             return ResponseEntity.status( HttpStatus.CREATED ).body( userModel );
 

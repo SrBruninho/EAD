@@ -12,6 +12,8 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpEntity;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
@@ -37,21 +39,18 @@ public class CourseClient {
 
     //@Retry(name = "retryInstance", fallbackMethod = "retryFallback")
     @CircuitBreaker(name = "circuibreakerInstance")
-    public Page<CourseDTO> getAllCoursesByUser(UUID userId, Pageable pageable){
+    public Page<CourseDTO> getAllCoursesByUser(UUID userId, Pageable pageable, String token){
         List<CourseDTO> searchResult = null;
         ResponseEntity<ResponsePageDTO<CourseDTO>> result = null;
         String url = REQUEST_URL_COURSE + utilsService.createURLGetAllCoursesByUser( userId, pageable );
+
         log.debug("Request URL: {}", url);
         log.info("Request URL: {}", url);
 
-        try{
-            ParameterizedTypeReference<ResponsePageDTO<CourseDTO>> responseType = new ParameterizedTypeReference<ResponsePageDTO<CourseDTO>>() {};
-            result = restTemplate.exchange( url, HttpMethod.GET, null, responseType);
-            searchResult = result.getBody().getContent();
-            log.debug("Response Number of Elements: {}", searchResult.size());
-        } catch ( HttpStatusCodeException e){
-            log.error("Error request /courses {}", e);
-        }
+        ParameterizedTypeReference<ResponsePageDTO<CourseDTO>> responseType = new ParameterizedTypeReference<ResponsePageDTO<CourseDTO>>() {};
+        result = restTemplate.exchange( url, HttpMethod.GET, utilsService.getRequestEntityToken( token ), responseType);
+        searchResult = result.getBody().getContent();
+        log.debug("Response Number of Elements: {}", searchResult.size());
         log.info("Ending request /courses userId {}", userId);
 
         return result.getBody();
