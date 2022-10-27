@@ -93,4 +93,40 @@ public class AuthenticationController {
         String jwt = jwtProvider.generateJwt( authentication );
         return ResponseEntity.ok( new JwtDTO( jwt ) );
     }
+
+    @PostMapping("/signup/admin/usr")
+    public ResponseEntity<Object> registerUserAdmin(@RequestBody
+                                               @Validated(UserDTO.UserView.RegistrationPost.class)
+                                               @JsonView(UserDTO.UserView.RegistrationPost.class)
+                                               UserDTO userDTO){
+        log.debug("POST | registerUSER userDTO received {}", userDTO.toString() );
+        if( userService.existsByUserName( userDTO.getUsername()) ){
+            log.warn("Username {} already registered! ", userDTO.getUsername() );
+            return ResponseEntity.status( HttpStatus.CONFLICT ).body( "Error: Username already registered!" );
+        }
+
+        if( userService.existsByEmail( userDTO.getEmail()) ){
+            log.warn("E-mail {} already registered! ", userDTO.getEmail() );
+            return ResponseEntity.status( HttpStatus.CONFLICT ).body( "Error: E-mail already registered!" );
+        }
+
+        RoleModel roleModel = roleService.findByRoleType( RoleType.ROLE_ADMIN )
+                .orElseThrow( () -> new RuntimeException("Error: Role is not Found!"));
+
+        userDTO.setPassword( passwordEncoder.encode( userDTO.getPassword() ) );
+
+        var userModel = new UserModel();
+        BeanUtils.copyProperties(userDTO,userModel);
+        userModel.setUserStatus(UserStatus.ACTIVE);
+        userModel.setUserType(UserType.ADMIN);
+        userModel.setCreationDate( LocalDateTime.now(ZoneId.of("UTC")) );
+        userModel.setLastUpdateDate( LocalDateTime.now(ZoneId.of("UTC")) );
+        userModel.getRoles().add( roleModel );
+
+        userService.saveAndPublishEvent( userModel );
+
+        log.debug("POST | register USER userId saved {}", userModel.getUserId() );
+        log.info("User saved succesfully ! {} ", userModel.getUserId() );
+        return ResponseEntity.status( HttpStatus.CREATED ).body( userModel );
+    }
 }
