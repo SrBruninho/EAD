@@ -16,6 +16,6 @@ spring:
           predicates:
             - Path=/ead-course/**
         - id: notification-service
-          uri: lb://ead-notification-service
+          uri: lb://ead-notification-service-hex
           predicates:
             - Path=/ead-notification/**
