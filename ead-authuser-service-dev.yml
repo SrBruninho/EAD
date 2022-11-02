@@ -26,7 +26,7 @@ spring:
     addresses: amqps://lropqnph:edP_v86MF8bq-V0XFCgK8DO_4Mb6NUL4@shark.rmq.cloudamqp.com/lropqnph
 
 logging:
-  file: ${java.io.tmpdir}/ead-authuser-service.log
+  file: logs/ead-authuser-service.log
   level:
     com.ead: INFO
     root: INFO
