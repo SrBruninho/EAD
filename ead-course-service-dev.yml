@@ -21,6 +21,12 @@ spring:
         show_sql: true
   rabbitmq:
     addresses: amqps://lropqnph:edP_v86MF8bq-V0XFCgK8DO_4Mb6NUL4@shark.rmq.cloudamqp.com/lropqnph
+logging:
+  level:
+    com.ead: INFO
+    root: INFO
+    org.springframework.web: INFO
+    org.hibernate: INFO
 
 ead:
   api:
